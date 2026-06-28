@@ -8,6 +8,7 @@ import type {
 } from '../types';
 import { logger } from './log-helper';
 import { redis } from '@devvit/web/server';
+import { getBotConfig } from '../config';
 
 const log = logger('command');
 
@@ -20,7 +21,6 @@ export function registerCommand(definition: CommandDefinition, handler: CommandH
   commands.set(definition.commandName, { definition, handler });
 }
 
-const BOT_MENTION = 'u/LLMPhysics-bot';
 const COMMAND_PATTERN = /!(\w+)(?:\s+\\?\[([^\]]+)\\?\])?/g;
 
 async function parseAndDispatch(
@@ -28,7 +28,7 @@ async function parseAndDispatch(
   contentType: 'comment' | 'post',
   event: CommandEvent,
 ): Promise<void> {
-  if (!body.toLowerCase().includes(BOT_MENTION.toLowerCase())) return;
+  if (!body.toLowerCase().includes(getBotConfig().botMention.toLowerCase())) return;
 
   const matches = [...body.matchAll(COMMAND_PATTERN)];
   if (matches.length === 0) return;

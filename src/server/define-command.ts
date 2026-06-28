@@ -3,12 +3,12 @@ import { logger } from '../helpers/log-helper';
 import { registerCommand } from '../helpers/command-helper';
 import { formatSignature } from '../helpers/settings-helper';
 import type { CommandEvent, SettingDef } from '../types';
+import { getBotConfig } from '../config';
 
 const log = logger('define');
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
 const WIKI_ARTICLE_BASE = 'https://en.wikipedia.org/wiki/';
-const USER_AGENT = 'llmphysics-bot/1.0 (Reddit bot; r/llmphysics)';
 const EXTRACT_MAX_CHARS = 600;
 const GEMINI_PRIMARY_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 const GEMINI_FALLBACK_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
@@ -92,7 +92,7 @@ async function fetchPageByTitle(title: string): Promise<WikiPage | null> {
     origin: '*',
   });
   const res = await fetch(`${WIKI_API}?${params}`, {
-    headers: { 'User-Agent': USER_AGENT },
+    headers: { 'User-Agent': getBotConfig().userAgent },
   });
   if (!res.ok) throw new Error(`Wikipedia fetch failed: ${res.status}`);
   const data = await res.json() as {
