@@ -1,6 +1,6 @@
 {
-  "name": "devvit-app-template",
-  "version": "0.1.0",
+  "name": "define-bot",
+  "version": "1.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {
