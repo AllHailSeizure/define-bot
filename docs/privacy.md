@@ -25,7 +25,7 @@ The app does not send usernames or user IDs to any third party, and it does not 
 
 - **Google Gemini API** (generativelanguage.googleapis.com) receives the requested term and a short instruction. The instruction includes the moderator-configured subject category, if one is set. Gemini replies with the Wikipedia article title it thinks matches the term.
   - If the moderators enable **search grounding**, Google may run Google Search queries for the term to answer.
-  - Google processes this data under the [Gemini API terms](https://ai.google.dev/gemini-api/terms) and [Google's Privacy Policy](https://policies.google.com/privacy). On Gemini's unpaid tier, Google may use submitted content to improve its products. The app operator chooses the tier through the API key they configure.
+  - Google processes this data under the [Gemini API terms](https://ai.google.dev/gemini-api/terms) and [Google's Privacy Policy](https://policies.google.com/privacy). On Gemini's unpaid tier, Google may use submitted content to improve its products. Which tier applies depends on the app operator's Google Cloud and Gemini account settings.
 - **Wikipedia / Wikimedia Foundation** (en.wikipedia.org) receives the resolved article title, through a public API request that identifies the app by its user agent. It is covered by the [Wikimedia Privacy Policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy).
 - **Reddit** runs the app and stores its Redis data and replies.
 
