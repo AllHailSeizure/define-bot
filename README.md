@@ -28,8 +28,6 @@ Define Bot is a Devvit app named **`define-bot`**. A moderator with permission t
 
 After installation, open the app’s **settings** for your subreddit. At minimum, whoever manages the app must set the **global** Gemini API key (see below). Without it, the bot will not reply.
 
-Developers and maintainers: see [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, testing, and releases.
-
 ## Settings
 
 Settings come from the app configuration. Labels below match what you see in the Devvit settings UI.
@@ -121,3 +119,5 @@ The app responds at most **once per comment** even if Reddit delivers the trigge
 ## License
 
 This project is licensed under the **MIT License** — see [LICENSE](LICENSE). Copyright (c) 2026 Nate Bosma.
+
+Code contributions: see [CONTRIBUTING.md](CONTRIBUTING.md).
