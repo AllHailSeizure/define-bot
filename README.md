@@ -26,19 +26,11 @@ Define Bot is a [Reddit Devvit](https://developers.reddit.com/docs) app that lis
 
 Define Bot is a Devvit app named **`define-bot`**. A moderator with permission to add apps to the subreddit installs it through **Reddit’s Devvit app installation** for that community (Devvit “install” in the mod workflow).
 
-After installation, open the app’s **settings** for your subreddit. At minimum, whoever manages the app must set the **global** Gemini API key (see below). Without it, the bot will not reply.
+After installation, open the app’s **settings** for your subreddit and complete any **app-level configuration** your installer shows in the Devvit UI. Until term lookup is fully configured, the bot will not reply.
 
 ## Settings
 
-Settings come from the app configuration. Labels below match what you see in the Devvit settings UI.
-
-### Global (app-wide)
-
-| Setting | Purpose |
-|--------|---------|
-| **Gemini API key** (`geminiApiKey`, secret) | Google Gemini API key used to resolve search terms to Wikipedia titles. **Required** for any replies. |
-
-### Subreddit
+Settings come from the app configuration. Labels below match what you see in the Devvit settings UI for your subreddit.
 
 | Setting | Default | Purpose |
 |--------|---------|---------|
@@ -107,7 +99,7 @@ Spin is an intrinsic form of angular momentum.
 ### When the bot does not reply
 
 - **`!define` is disabled** for the subreddit — no comment.
-- **No Gemini API key** is configured — no comment.
+- **Term lookup is not configured** at the app level — no comment.
 - **No mention** of `u/define-bot` — ignored.
 - **Missing `[term]`** or unknown command — ignored.
 - **Gemini returns “none”** (especially with a subject category) — you may see: `"term" doesn't appear to be a {category} concept.` or `Couldn't find a Wikipedia article for "term".`
