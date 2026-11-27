@@ -1,127 +1,123 @@
 # Define Bot
 
-A [Reddit Devvit](https://developers.reddit.com/docs) Web app that answers `!define [term]` in comments with the matching English Wikipedia article: its title, link, and intro (up to about 600 characters). Google Gemini picks the right article title. If a subject category is set, Gemini uses it to prefer the topic-specific article, for example "Observer effect (physics)".
+**Mention the bot with `!define` and get a concise English Wikipedia summary in the thread.**
 
-- **Devvit app:** `define-bot` · **Baseline version:** `1.0.0` (new app, never published)
-- **Legal:** [Terms](https://allhailseizure.github.io/define-bot/terms/) · [Privacy](https://allhailseizure.github.io/define-bot/privacy/)
-- Extracted from the `define` command of `moderator-toolbox` in [`AllHailSeizure/Reddit-Devvit`](https://github.com/AllHailSeizure/Reddit-Devvit) at source commit `649cd2a9e8fece8b3253d373f34ff911e42f931e`. The history of `define-command.ts` and `command-helper.ts` is preserved with `git filter-repo`. Cutover steps are in `CUTOVER.md` in [`moderator-toolbox`](https://github.com/AllHailSeizure/moderator-toolbox).
+Define Bot is a [Reddit Devvit](https://developers.reddit.com/docs) app that listens for comments, looks up a term, and replies with the article title, a link to [English Wikipedia](https://en.wikipedia.org/), and a short introduction (up to about 600 characters).
 
-## Usage
+<!-- SCREENSHOT: A comment thread where a user wrote "u/define-bot !define [renormalization]" and the bot replied with a bold title, Wikipedia link, and intro text. -->
 
-```
-u/define-bot !define [renormalization]
-```
+> 📸 Screenshot coming soon: a `!define` command and the bot’s Wikipedia reply in a subreddit comment thread.
 
-The comment must **mention the app account**, because the command helper matches `u/{appSlug}`. After cutover, users mention `u/define-bot` instead of `u/moderator-toolbox`.
+## Features
 
-## How it works
+- **`!define` in comments** — Users ask for a definition without leaving the post.
+- **Smart title matching** — Google Gemini picks the best Wikipedia article title for the term (with optional subject-category hints for your subreddit).
+- **Readable replies** — Bold article title, markdown link to Wikipedia, and a trimmed lead paragraph.
+- **Subreddit controls** — Turn the command on or off, set a subject category, toggle search grounding, and customize the bot signature.
+- **One reply per command comment** — The app ignores duplicate deliveries for the same comment within about an hour.
+- **English Wikipedia only** — Lookups use the public English Wikipedia API.
 
-```
-onCommentCreate → command-helper.ts
-  · needs "u/define-bot" + "!define [term]" · once per comment (bot:cmd:{commentId}, 1 h)
-  ▼
-define-command.ts
-  · Gemini gemini-2.5-flash-lite (falls back to gemini-3.1-flash-lite on HTTP 429), optional Google Search grounding
-  · "none" → "not a {category} concept" / "couldn't find"
-  · Wikipedia action=query&prop=extracts&exintro (redirects followed)
-  ▼
-reply: **Title** + [Wikipedia](link) + truncated intro + bot signature
-```
+## Legal
+
+- [Terms of Service](https://allhailseizure.github.io/define-bot/terms/)
+- [Privacy Policy](https://allhailseizure.github.io/define-bot/privacy/)
+
+## Install the app on your subreddit
+
+Define Bot is a Devvit app named **`define-bot`**. A moderator with permission to add apps to the subreddit installs it through **Reddit’s Devvit app installation** for that community (Devvit “install” in the mod workflow).
+
+After installation, open the app’s **settings** for your subreddit. At minimum, whoever manages the app must set the **global** Gemini API key (see below). Without it, the bot will not reply.
+
+Developers and maintainers: see [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, testing, and releases.
 
 ## Settings
 
-- **Global:** `geminiApiKey` (secret).
-- **Subreddit:** `defineCommandEnabled`, `defineCommandCategory`, `defineCommandSearchGrounding`, `botSignature`.
-- HTTP allowlist: `en.wikipedia.org` and `generativelanguage.googleapis.com` only. There is no Supabase dependency.
+Settings come from the app configuration. Labels below match what you see in the Devvit settings UI.
 
-The app account comments, so **add `define-bot` to `STATIC_BOT_AUTHORS` in moderator-toolbox's report-moderator**. Already done in the slimmed toolbox.
+### Global (app-wide)
+
+| Setting | Purpose |
+|--------|---------|
+| **Gemini API key** (`geminiApiKey`, secret) | Google Gemini API key used to resolve search terms to Wikipedia titles. **Required** for any replies. |
+
+### Subreddit
+
+| Setting | Default | Purpose |
+|--------|---------|---------|
+| **Enable** (`defineCommandEnabled`) | On | Turn the `!define` command on or off for this subreddit. |
+| **Subject category** (`defineCommandCategory`) | *(empty)* | Hint for disambiguation (e.g. `physics`). When set, Gemini prefers topic-specific articles and may treat off-topic terms as “not a {category} concept.” |
+| **Search grounding** (`defineCommandSearchGrounding`) | On | When on, Gemini may use Google Search grounding while resolving the term. |
+| **General — Bot signature** (`botSignature`) | Standard disclaimer | Text appended to every bot comment (Reddit superscript styling). Leave blank for no signature. |
+
+## How to use it
+
+There are **no mod menus or forms** in this app—only the comment command below.
+
+### Command format
+
+1. Post a **comment** on the subreddit (not a post title or body).
+2. **Mention the app account** and include **`!define`** with the term in **square brackets**.
+
+The app slug is `define-bot`, so the mention is:
+
+```text
+u/define-bot
+```
+
+**Example:**
+
+```text
+u/define-bot !define [renormalization]
+```
+
+Another example from tests:
+
+```text
+u/define-bot !define [spin]
+```
+
+**Rules (from how the app parses commands):**
+
+- The mention `u/define-bot` is **required** (case-insensitive match).
+- The term must be inside **brackets**: `!define [your term here]`.
+- Only **`!define`** is registered; other `!commands` are ignored.
+- `!define` without a `[term]` is ignored.
+- Extra punctuation around the term inside the brackets is trimmed when possible.
+
+### What you get back
+
+On success, the bot comments under yours with:
+
+1. **Article title** (bold)
+2. A **[Wikipedia](…)** link to the English article
+3. The article introduction, shortened to about 600 characters when needed
+4. Your configured **bot signature** (if any)
+
+**Example shape of a reply** (content will vary):
+
+```text
+**Spin (physics)**
+[Wikipedia](https://en.wikipedia.org/wiki/Spin_(physics))
+
+Spin is an intrinsic form of angular momentum.
 
 ---
 
-## Local Commands
-
-```sh
-npm run check       # lint + typecheck + test + vite build
-npm run lint        # ESLint
-npm run typecheck   # tsc --noEmit
-npm test            # Vitest (no Reddit login required)
-npm run build       # Vite build -> dist/server/index.cjs
-npm run dev         # npx devvit playtest (requires Devvit login)
+^I ^am ^a ^bot.
 ```
 
-### No-Login Testing (offline virtual Reddit)
+### When the bot does not reply
 
-`createModTest()` in `src/server/test-harness/` wraps `@devvit/test` with:
+- **`!define` is disabled** for the subreddit — no comment.
+- **No Gemini API key** is configured — no comment.
+- **No mention** of `u/define-bot` — ignored.
+- **Missing `[term]`** or unknown command — ignored.
+- **Gemini returns “none”** (especially with a subject category) — you may see: `"term" doesn't appear to be a {category} concept.` or `Couldn't find a Wikipedia article for "term".`
+- **Wikipedia has no matching article** — `Couldn't find a Wikipedia article for "…".`
+- **API errors** — `Failed to look up "term" — please try again later.`
 
-- **`FakeRedditWorld`**: subreddits, users (mods, approved, banned, bots), threaded posts and comments, flair, reports, removals and approvals, modmail, wiki pages, mod notes and private messages behind the `reddit.*` API. Every write the app makes is logged (`world.describeActions()`).
-- **`ScenarioRunner`**:
-  - Simulates Reddit activity (`userPosts`, `userComments`, `report`, `modRemoves`, `userModmails`, `install`, …) and fires whichever triggers `devvit.json` declares.
-  - Clicks menus and submits forms as a given user.
-  - Advances a fake clock that runs cron tasks and `scheduler.runJob` jobs.
-  - Offers a `given` / `when` / `then` scenario DSL.
-- **`FakeHttp`**: per-domain `fetch` stubs. An unstubbed call fails the test, so does a host missing from `devvit.json` `permissions.http.domains`, and reddit.com is always blocked.
-- **Coverage**: `expectAllEndpointsCovered()` fails if any declared trigger, menu, form or scheduler endpoint has no scenario.
+The app responds at most **once per comment** even if Reddit delivers the trigger more than once.
 
-See [`src/server/test-harness/README.md`](src/server/test-harness/README.md) for the API and known gaps, and `src/server/define-command.test.ts` for this app's scenarios.
+## License
 
-This repo keeps the harness up to date with `npm run harness:sync`. `npm run harness:check` and the weekly `harness-drift` workflow report drift. Do not edit `src/server/test-harness/` here; change it in [devvit-app-template](https://github.com/AllHailSeizure/devvit-app-template) and sync.
-
-> `createModTest()` wraps plain `test(...)` calls only. For parameterised cases, loop over the cases and call `test(...)` for each one: `test.each` / `test.for` bypass the wrapper, so their tests get no `world` or `runner`.
-
----
-
-## Required GitHub Secret (`DEVVIT_AUTH_TOKEN`)
-
-The tag release workflow requires a repository (or organization) secret named **`DEVVIT_AUTH_TOKEN`** containing the **full raw contents** of your logged-in `~/.devvit/token` file:
-
-```sh
-npx devvit login
-npx devvit whoami
-gh secret set DEVVIT_AUTH_TOKEN < ~/.devvit/token
-```
-
-On Windows PowerShell:
-
-```powershell
-npx devvit whoami
-Get-Content -LiteralPath (Join-Path $env:USERPROFILE '.devvit/token') -Raw |
-  gh secret set DEVVIT_AUTH_TOKEN
-```
-
-> **Security & reliability note:** `DEVVIT_AUTH_TOKEN` is an undocumented CLI environment variable holding your personal Reddit OAuth refresh token — not a scoped CI service account. Keep it strictly on the tag release job (never PR workflows), rotate it if compromised, and note that it can expire or require re-login (`devvit login`) if Reddit invalidates sessions.
-
----
-
-## Versioning & Release Process
-
-### Versioning Rules
-
-- **Strict 3-part SemVer only:** `MAJOR.MINOR.PATCH` (e.g. `1.2.0`). Never use 4-part versions or prerelease suffixes for releases.
-- **Lockstep invariant:** Every release keeps four artifacts identical:
-  1. `package.json` and `package-lock.json` (`"version": "X.Y.Z"`)
-  2. Git tag (`vX.Y.Z`)
-  3. GitHub Release (`vX.Y.Z`)
-  4. Devvit App Store (`X.Y.Z`)
-
-### Running a Release
-
-Releases are tag-triggered. Pushing a `vX.Y.Z` tag runs **Release Devvit app** (`release.yml`), which publishes **that exact tagged commit** to the Devvit App Store. There is no manual publish button.
-
-Only Nate approves releases. Once Nate has approved a release, Devviteloper (Nate's Devvit project-lead bot) pushes the `vX.Y.Z` tag. Devvit PRs may be merged by Nate or Devviteloper. The release workflow does not enforce that approval; it is a process rule.
-
-1. In a PR, bump the version in `package.json` and `package-lock.json` (`npm version X.Y.Z --no-git-tag-version`), merge it to `master` (Nate or Devviteloper may merge), and wait for **CI** (`ci.yml`) to pass.
-2. After Nate has approved the release, Devviteloper tags the merged commit and pushes **only the tag**:
-
-```sh
-git checkout master && git pull
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
-```
-
-3. The workflow (a thin caller of the shared [`devvit-release.yml`](https://github.com/AllHailSeizure/.github/blob/master/.github/workflows/devvit-release.yml)) checks out the tag's commit and fails before publishing unless the tag is strict SemVer `vX.Y.Z`, the commit is on `master`, and `package.json` and `package-lock.json` already say `X.Y.Z`. It then runs `npm run check`, authenticates via `DEVVIT_AUTH_TOKEN`, runs `npx --no devvit publish --version X.Y.Z` (with `DEVVIT_ALLOW_SOURCE_UPLOAD=1`), asserts the store reports `X.Y.Z`, and creates GitHub Release `vX.Y.Z`. CI never pushes a commit back.
-
-Releases publish as **unlisted**. To publish publicly, change `visibility: unlisted` to `public` in `release.yml`.
-
-If a tag fails validation, nothing was published: delete the tag (`git push origin :refs/tags/vX.Y.Z`), fix the cause, and tag again. One release runs at a time per repository, so push tags one at a time.
-
-> Note: `devvit publish` submits a version to Reddit's Developer Portal. Installing/upgrading on a subreddit (`devvit install`) and deploying any external Supabase migrations/functions remain separate steps.
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE). Copyright (c) 2026 Nate Bosma.
